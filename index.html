@@ -212,6 +212,24 @@ function initGame() {
     };
 
     applySkills();
+
+    // Pre-spawn a huge wave so the screen is flooded from the start
+    for (let i = 0; i < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 100 + Math.random() * 350;
+        const ex = game.player.x + Math.cos(angle) * dist;
+        const ey = game.player.y + Math.sin(angle) * dist;
+        const hp = 30 + Math.random() * 20;
+        const speed = 0.8 + Math.random() * 0.8;
+        const size = 12 + Math.random() * 6;
+        const dmg = 10 + Math.random() * 5;
+        const colors = ['#aa4444', '#aa44aa', '#8844aa', '#aa6644'];
+        game.enemies.push({
+            x: ex, y: ey, hp, maxHp: hp, speed, size, dmg,
+            color: colors[Math.floor(Math.random() * colors.length)], flash: 0
+        });
+    }
+
     updateHUD();
     updateInventory();
 }
@@ -256,15 +274,17 @@ function spawnEnemy() {
     const ex = g.player.x + Math.cos(angle) * dist;
     const ey = g.player.y + Math.sin(angle) * dist;
 
-    const difficulty = Math.min(g.time / 60, 5);
-    const hp = 10 + difficulty * 8 + Math.random() * 5;
-    const speed = 0.8 + Math.random() * 0.5 + difficulty * 0.15;
-    const size = 10 + Math.random() * 6;
-    const dmg = 5 + difficulty * 2;
+    // Enemy strength scales with player power - start strong, get weaker
+    const totalItems = (g.player.weapons.length + g.player.skills.length);
+    const powerRatio = totalItems / 8; // 1.0 = full build, 0 = empty
+    const hp = 5 + powerRatio * 40 + Math.random() * 10;
+    const speed = 0.6 + Math.random() * 0.4 + powerRatio * 0.8;
+    const size = 8 + powerRatio * 8 + Math.random() * 4;
+    const dmg = 3 + powerRatio * 12;
 
-    // Color based on difficulty tier
-    const colors = ['#44aa44', '#aaaa44', '#aa6644', '#aa4444', '#aa44aa', '#4444aa'];
-    const tier = Math.min(Math.floor(difficulty), colors.length - 1);
+    // Color: reds/purples when strong, greens when weak
+    const colors = ['#44aa44', '#66aa44', '#aaaa44', '#aa8844', '#aa6644', '#aa4444', '#aa44aa', '#8844aa', '#4444aa'];
+    const tier = Math.min(Math.floor(powerRatio * (colors.length - 1)), colors.length - 1);
 
     g.enemies.push({ x: ex, y: ey, hp, maxHp: hp, speed, size, dmg, color: colors[tier], flash: 0 });
 }
@@ -421,13 +441,17 @@ function update(dt) {
     // Invulnerability
     if (p.invuln > 0) p.invuln -= dt;
 
-    // Spawn enemies
+    // Spawn enemies - intensity scales with player power, not time
     g.spawnTimer -= dt;
-    const spawnRate = Math.max(0.3, g.spawnRate - g.time * 0.008);
+    const totalItems = p.weapons.length + p.skills.length;
+    const powerRatio = totalItems / 8; // 1.0 at full build, 0 at empty
+    // At full power: spawn every 0.15s in groups of 6 (VS late-game swarm)
+    // At no items: spawn every 3s in groups of 1
+    const spawnRate = 0.15 + (1 - powerRatio) * 2.85;
+    const spawnCount = Math.max(1, Math.round(1 + powerRatio * 5));
     if (g.spawnTimer <= 0) {
         g.spawnTimer = spawnRate;
-        const count = 1 + Math.floor(g.time / 30);
-        for (let i = 0; i < count; i++) spawnEnemy();
+        for (let i = 0; i < spawnCount; i++) spawnEnemy();
     }
 
     // Update enemies
