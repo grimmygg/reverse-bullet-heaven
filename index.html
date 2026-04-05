@@ -159,8 +159,8 @@ const WEAPON_DEFS = [
 
 const SKILL_DEFS = [
     { id: 'speed', name: 'Swift Feet', desc: '+50% move speed', color: '#44ff44', stat: 'moveSpeed', mult: 1.5 },
-    { id: 'armor', name: 'Thick Skin', desc: '-50% damage taken', color: '#8888aa', stat: 'armor', mult: 0.5 },
-    { id: 'regen', name: 'Regeneration', desc: 'Recover HP over time', color: '#44ff88', stat: 'regen', value: 15 },
+    { id: 'armor', name: 'Thick Skin', desc: '-35% damage taken', color: '#8888aa', stat: 'armor', mult: 0.65 },
+    { id: 'regen', name: 'Regeneration', desc: 'Recover HP over time', color: '#44ff88', stat: 'regen', value: 8 },
     { id: 'magnet', name: 'XP Magnet', desc: 'XP orbs attracted from farther (bad!)', color: '#ff44ff', stat: 'magnet', mult: 2.5 },
     { id: 'damage', name: 'Power Up', desc: '+75% weapon damage', color: '#ff4444', stat: 'damage', mult: 1.75 },
     { id: 'attackspd', name: 'Rapid Fire', desc: '+50% attack speed', color: '#ffaa44', stat: 'attackSpeed', mult: 1.5 },
@@ -223,7 +223,7 @@ function initGame() {
         const hp = 15 + Math.random() * 10;
         const speed = 0.5 + Math.random() * 0.5;
         const size = 10 + Math.random() * 6;
-        const dmg = 3 + Math.random() * 3;
+        const dmg = 10 + Math.random() * 5;
         const colors = ['#aa4444', '#aa44aa', '#8844aa', '#aa6644'];
         game.enemies.push({
             x: ex, y: ey, hp, maxHp: hp, speed, size, dmg,
@@ -278,12 +278,12 @@ function spawnEnemy() {
     // Enemy strength scales with player power - start strong, get weaker
     const totalItems = (g.player.weapons.length + g.player.skills.length);
     const powerRatio = totalItems / 8; // 1.0 = full build, 0 = empty
-    // Enemies are always fodder - low HP so weapons shred them
-    // But as player weakens, enemies get relatively tougher
+    // Enemies are fodder HP-wise (weapons shred them) but they hit hard enough
+    // that standing still in a crowd will kill you. Moving and kiting = safe.
     const hp = 8 + powerRatio * 15 + Math.random() * 8;
     const speed = 0.5 + Math.random() * 0.3 + powerRatio * 0.5;
     const size = 8 + powerRatio * 6 + Math.random() * 4;
-    const dmg = 2 + powerRatio * 4;
+    const dmg = 8 + powerRatio * 7;
 
     // Color: reds/purples when strong, greens when weak
     const colors = ['#44aa44', '#66aa44', '#aaaa44', '#aa8844', '#aa6644', '#aa4444', '#aa44aa', '#8844aa', '#4444aa'];
