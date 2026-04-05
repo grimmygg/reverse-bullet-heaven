@@ -125,47 +125,47 @@ canvas.width = W; canvas.height = H;
 const WEAPON_DEFS = [
     {
         id: 'orbitals', name: 'Orbitals', desc: 'Shields that spin around you',
-        color: '#ffaa00', dmg: 8, count: 4, radius: 60, speed: 2.5, size: 8
+        color: '#ffaa00', dmg: 20, count: 4, radius: 70, speed: 2.5, size: 10
     },
     {
         id: 'shotgun', name: 'Shotgun Blast', desc: 'Burst of pellets forward',
-        color: '#ff5555', dmg: 5, count: 5, spread: 0.6, speed: 7, cooldown: 0.8, size: 4, range: 200
+        color: '#ff5555', dmg: 18, count: 7, spread: 0.8, speed: 8, cooldown: 0.5, size: 5, range: 250
     },
     {
         id: 'laser', name: 'Laser Beam', desc: 'Continuous beam in facing direction',
-        color: '#55ffff', dmg: 15, width: 4, range: 350, cooldown: 0.1
+        color: '#55ffff', dmg: 35, width: 6, range: 400, cooldown: 0.1
     },
     {
         id: 'mines', name: 'Mine Layer', desc: 'Drops explosive mines behind you',
-        color: '#ff55ff', dmg: 25, cooldown: 1.5, radius: 50, size: 6, duration: 8
+        color: '#ff55ff', dmg: 60, cooldown: 1.0, radius: 70, size: 8, duration: 10
     },
     {
         id: 'homing', name: 'Homing Bolts', desc: 'Seeks nearest enemy',
-        color: '#55ff55', dmg: 10, speed: 4, cooldown: 0.6, size: 5, range: 250
+        color: '#55ff55', dmg: 30, speed: 5, cooldown: 0.35, size: 6, range: 300
     },
     {
         id: 'aura', name: 'Damage Aura', desc: 'Hurts nearby enemies passively',
-        color: '#ffff55', dmg: 3, radius: 80, tickRate: 0.3
+        color: '#ffff55', dmg: 12, radius: 100, tickRate: 0.25
     },
     {
         id: 'boomerang', name: 'Boomerang', desc: 'Thrown projectile that returns',
-        color: '#ff8800', dmg: 12, speed: 5, cooldown: 1.2, range: 180, size: 7
+        color: '#ff8800', dmg: 35, speed: 6, cooldown: 0.8, range: 200, size: 9
     },
     {
         id: 'chain', name: 'Chain Lightning', desc: 'Arcs between nearby enemies',
-        color: '#8888ff', dmg: 8, cooldown: 1.0, range: 150, chains: 3
+        color: '#8888ff', dmg: 25, cooldown: 0.6, range: 200, chains: 4
     }
 ];
 
 const SKILL_DEFS = [
-    { id: 'speed', name: 'Swift Feet', desc: '+40% move speed', color: '#44ff44', stat: 'moveSpeed', mult: 1.4 },
-    { id: 'armor', name: 'Thick Skin', desc: '-30% damage taken', color: '#8888aa', stat: 'armor', mult: 0.7 },
-    { id: 'regen', name: 'Regeneration', desc: 'Recover HP over time', color: '#44ff88', stat: 'regen', value: 5 },
-    { id: 'magnet', name: 'XP Magnet', desc: 'XP orbs attracted from farther (bad!)', color: '#ff44ff', stat: 'magnet', mult: 2.0 },
-    { id: 'damage', name: 'Power Up', desc: '+50% weapon damage', color: '#ff4444', stat: 'damage', mult: 1.5 },
-    { id: 'attackspd', name: 'Rapid Fire', desc: '+35% attack speed', color: '#ffaa44', stat: 'attackSpeed', mult: 1.35 },
-    { id: 'knockback', name: 'Repulse', desc: 'Knock enemies back on hit', color: '#aaaaff', stat: 'knockback', value: 80 },
-    { id: 'maxhp', name: 'Vitality', desc: '+50 max HP', color: '#ff8888', stat: 'maxHp', value: 50 },
+    { id: 'speed', name: 'Swift Feet', desc: '+50% move speed', color: '#44ff44', stat: 'moveSpeed', mult: 1.5 },
+    { id: 'armor', name: 'Thick Skin', desc: '-50% damage taken', color: '#8888aa', stat: 'armor', mult: 0.5 },
+    { id: 'regen', name: 'Regeneration', desc: 'Recover HP over time', color: '#44ff88', stat: 'regen', value: 15 },
+    { id: 'magnet', name: 'XP Magnet', desc: 'XP orbs attracted from farther (bad!)', color: '#ff44ff', stat: 'magnet', mult: 2.5 },
+    { id: 'damage', name: 'Power Up', desc: '+75% weapon damage', color: '#ff4444', stat: 'damage', mult: 1.75 },
+    { id: 'attackspd', name: 'Rapid Fire', desc: '+50% attack speed', color: '#ffaa44', stat: 'attackSpeed', mult: 1.5 },
+    { id: 'knockback', name: 'Repulse', desc: 'Knock enemies back on hit', color: '#aaaaff', stat: 'knockback', value: 120 },
+    { id: 'maxhp', name: 'Vitality', desc: '+100 max HP', color: '#ff8888', stat: 'maxHp', value: 100 },
 ];
 
 // ============ GAME STATE ============
@@ -185,7 +185,7 @@ function initGame() {
 
     game = {
         player: {
-            x: W / 2, y: H / 2, baseSpeed: 2.5, hp: 100, maxHp: 100,
+            x: W / 2, y: H / 2, baseSpeed: 3.0, hp: 250, maxHp: 250,
             facingX: 1, facingY: 0, invuln: 0,
             weapons: weapons.map(w => ({ ...w, timer: 0 })),
             skills: [...skills],
@@ -198,7 +198,7 @@ function initGame() {
         mines: [],
         chainLightnings: [],
         xp: 0,
-        xpToDelevel: 15,
+        xpToDelevel: 25,
         level: 10,
         kills: 0,
         delevels: 0,
@@ -214,15 +214,16 @@ function initGame() {
     applySkills();
 
     // Pre-spawn a huge wave so the screen is flooded from the start
-    for (let i = 0; i < 80; i++) {
+    // Keep them at medium distance so player has a moment to orient
+    for (let i = 0; i < 100; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const dist = 100 + Math.random() * 350;
+        const dist = 150 + Math.random() * 300;
         const ex = game.player.x + Math.cos(angle) * dist;
         const ey = game.player.y + Math.sin(angle) * dist;
-        const hp = 30 + Math.random() * 20;
-        const speed = 0.8 + Math.random() * 0.8;
-        const size = 12 + Math.random() * 6;
-        const dmg = 10 + Math.random() * 5;
+        const hp = 15 + Math.random() * 10;
+        const speed = 0.5 + Math.random() * 0.5;
+        const size = 10 + Math.random() * 6;
+        const dmg = 3 + Math.random() * 3;
         const colors = ['#aa4444', '#aa44aa', '#8844aa', '#aa6644'];
         game.enemies.push({
             x: ex, y: ey, hp, maxHp: hp, speed, size, dmg,
@@ -251,7 +252,7 @@ function getPlayerStats() {
 
 function applySkills() {
     const p = game.player;
-    let stats = { moveSpeed: p.baseSpeed, armor: 1.0, regen: 0, magnet: 60, damage: 1.0, attackSpeed: 1.0, knockback: 0, maxHp: 100 };
+    let stats = { moveSpeed: p.baseSpeed, armor: 1.0, regen: 0, magnet: 60, damage: 1.0, attackSpeed: 1.0, knockback: 0, maxHp: 250 };
 
     for (const sk of p.skills) {
         if (sk.mult) stats[sk.stat] *= sk.mult;
@@ -277,10 +278,12 @@ function spawnEnemy() {
     // Enemy strength scales with player power - start strong, get weaker
     const totalItems = (g.player.weapons.length + g.player.skills.length);
     const powerRatio = totalItems / 8; // 1.0 = full build, 0 = empty
-    const hp = 5 + powerRatio * 40 + Math.random() * 10;
-    const speed = 0.6 + Math.random() * 0.4 + powerRatio * 0.8;
-    const size = 8 + powerRatio * 8 + Math.random() * 4;
-    const dmg = 3 + powerRatio * 12;
+    // Enemies are always fodder - low HP so weapons shred them
+    // But as player weakens, enemies get relatively tougher
+    const hp = 8 + powerRatio * 15 + Math.random() * 8;
+    const speed = 0.5 + Math.random() * 0.3 + powerRatio * 0.5;
+    const size = 8 + powerRatio * 6 + Math.random() * 4;
+    const dmg = 2 + powerRatio * 4;
 
     // Color: reds/purples when strong, greens when weak
     const colors = ['#44aa44', '#66aa44', '#aaaa44', '#aa8844', '#aa6644', '#aa4444', '#aa44aa', '#8844aa', '#4444aa'];
